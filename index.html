@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster Pro</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #f0f0f0;
+        }
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+        .dashboard {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .team-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .team {
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            padding: 10px;
+            width: calc(50% - 10px);
+        }
+        .team h3 {
+            margin-bottom: 10px;
+        }
+        .member {
+            cursor: pointer;
+            padding: 5px;
+            margin: 5px 0;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+        }
+        .member:hover {
+            background-color: #d0d0d0;
+        }
+        .project-details {
+            margin-top: 20px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        #loginPrompt {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #loginPrompt input {
+            display: block;
+            margin: 10px 0;
+            padding: 5px;
+            width: 200px;
+        }
+        #loginPrompt button {
+            display: block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .task-form {
+            margin-top: 10px;
+        }
+        .task-form input, .task-form button {
+            margin-right: 5px;
+            padding: 5px;
+        }
+        .task-list {
+            margin-top: 10px;
+        }
+        .task-item {
+            background-color: #f0f0f0;
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .progress {
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+        }
+        .employee-details {
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .employee-details h3 {
+            margin-bottom: 10px;
+        }
+        .employee-projects {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        .employee-tasks {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="#4CAF50"/>
+                    <path d="M30 50 L45 65 L70 40" stroke="white" stroke-width="8" fill="none"/>
+                </svg>
+                <h1>TaskMaster Pro</h1>
+            </div>
+            <button id="logoutBtn" class="hidden">Logout</button>
+        </header>
+        <main id="mainContent" class="hidden">
+
+        </main>
+    </div>
+    <div id="loginPrompt">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button id="loginBtn">Login</button>
+    </div>
+
+    <script>
+        const users = [
+            { username: 'admin', password: 'admin123', role: 'admin' },
+            { username: 'employee1', password: 'emp123', role: 'employee', team: 'Technical', projects: [{ name: 'Project X', status: 'In Progress', completion: 75 }] },
+            { username: 'employee2', password: 'emp124', role: 'employee', team: 'Social', projects: [{ name: 'Project Y', status: 'Planning', completion: 25 }] },
+            { username: 'employee3', password: 'emp125', role: 'employee', team: 'Managing', projects: [{ name: 'Project Z', status: 'Testing', completion: 90 }] },
+            { username: 'employee4', password: 'emp126', role: 'employee', team: 'Planning', projects: [{ name: 'Project W', status: 'Development', completion: 50 }] },
+        ];
+
+        const teams = [
+            { name: 'Technical', head: 'John Doe', members: ['Alice', 'Bob', 'Charlie', 'David'] },
+            { name: 'Social', head: 'Jane Smith', members: ['Eve', 'Frank', 'Grace', 'Henry'] },
+            { name: 'Managing', head: 'Mike Johnson', members: ['Ivy', 'Jack', 'Kate', 'Liam'] },
+            { name: 'Planning', head: 'Sarah Williams', members: ['Mia', 'Noah', 'Olivia', 'Paul'] },
+        ];
+
+        const tasks = {
+            'Alice': ['Implement login functionality', 'Design database schema', 'Create API documentation', 'Perform code review'],
+            'Bob': ['Develop user dashboard', 'Optimize database queries', 'Implement caching mechanism', 'Write unit tests'],
+            'Charlie': ['Create responsive layouts', 'Implement dark mode', 'Design logo variations', 'Conduct usability testing'],
+            'David': ['Set up CI/CD pipeline', 'Configure server environments', 'Implement backup strategy', 'Perform security audit'],
+            'Eve': ['Conduct market research', 'Create marketing strategy', 'Design promotional materials', 'Analyze campaign results'],
+            'Frank': ['Develop sales pitch', 'Conduct client meetings', 'Prepare sales reports', 'Analyze competitor strategies'],
+            'Grace': ['Create financial forecast', 'Prepare budget reports', 'Conduct financial analysis', 'Manage accounts payable'],
+            'Henry': ['Develop employee training program', 'Conduct performance reviews', 'Manage recruitment process', 'Update employee handbook'],
+            'Ivy': ['Create content strategy', 'Write blog posts', 'Manage social media accounts', 'Analyze content performance'],
+            'Jack': ['Design product packaging', 'Create promotional videos', 'Develop brand guidelines', 'Conduct focus groups'],
+            'Kate': ['Manage customer support tickets', 'Develop customer satisfaction surveys', 'Create knowledge base articles', 'Train support team'],
+            'Liam': ['Conduct product testing', 'Document bug reports', 'Develop test automation scripts', 'Perform regression testing'],
+            'Mia': ['Manage project timeline', 'Coordinate team meetings', 'Prepare status reports', 'Identify and mitigate project risks'],
+            'Noah': ['Research emerging technologies', 'Develop proof of concept', 'Present technology recommendations', 'Conduct technology workshops'],
+            'Olivia': ['Manage vendor relationships', 'Negotiate contracts', 'Conduct cost analysis', 'Manage inventory levels'],
+            'Paul': ['Develop data analysis models', 'Create data visualizations', 'Prepare analytical reports', 'Conduct data quality assessments']
+        };
+
+        const taskProgress = {
+            'Alice': 75, 'Bob': 60, 'Charlie': 80, 'David': 70,
+            'Eve': 65, 'Frank': 55, 'Grace': 85, 'Henry': 75,
+            'Ivy': 70, 'Jack': 60, 'Kate': 80, 'Liam': 75,
+            'Mia': 65, 'Noah': 70, 'Olivia': 80, 'Paul': 75
+        };
+
+        const app = document.getElementById('app');
+        const mainContent = document.getElementById('mainContent');
+        const loginPrompt = document.getElementById('loginPrompt');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+
+        loginBtn.addEventListener('click', login);
+        logoutBtn.addEventListener('click', logout);
+
+        function login() {
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                loginPrompt.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                mainContent.classList.remove('hidden');
+                if (user.role === 'admin') {
+                    renderAdminDashboard();
+                } else {
+                    renderEmployeeDashboard(user);
+                }
+            } else {
+                alert('Invalid username or password');
+            }
+        }
+
+        function logout() {
+            loginPrompt.classList.remove('hidden');
+            logoutBtn.classList.add('hidden');
+            mainContent.classList.add('hidden');
+            mainContent.innerHTML = '';
+            usernameInput.value = '';
+            passwordInput.value = '';
+        }
+
+        function renderAdminDashboard() {
+            let html = '<div class="dashboard"><h2>Admin Dashboard</h2><div class="team-list">';
+            teams.forEach(team => {
+                html += `
+                    <div class="team">
+                        <h3>${team.name} Team</h3>
+                        <p>Head: ${team.head}</p>
+                        <h4>Members:</h4>
+                        ${team.members.map(member => `
+                            <div class="member" onclick="showProjectDetails('${member}')">
+                                ${member}
+                                <div class="task-list">
+                                    ${tasks[member].map(task => `<div class="task-item">${task}</div>`).join('')}
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: ${taskProgress[member]}%">${taskProgress[member]}%</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            });
+            html += '</div><div id="projectDetails" class="project-details hidden"></div></div>';
+            mainContent.innerHTML = html;
+        }
+
+        function renderEmployeeDashboard(user) {
+            const employeeName = user.username.charAt(0).toUpperCase() + user.username.slice(1);
+            const teamDetails = teams.find(team => team.name === user.team);
+            const html = `
+                <div class="dashboard">
+                    <h2>Employee Dashboard</h2>
+                    <div class="employee-details">
+                        <h3>Employee Details</h3>
+                        <p><strong>Name:</strong> ${employeeName}</p>
+                        <p><strong>Role:</strong> ${user.role}</p>
+                        <p><strong>Team:</strong> ${user.team}</p>
+                    </div>
+                    <div class="employee-details">
+                        <h3>Team Information</h3>
+                        <p><strong>Team Name:</strong> ${user.team}</p>
+                        <p><strong>Team Head:</strong> ${teamDetails.head}</p>
+                        <p><strong>Team Members:</strong> ${teamDetails.members.join(', ')}</p>
+                    </div>
+                    <div class="employee-projects">
+                        <h3>Your Projects</h3>
+                        ${user.projects.map(project => `
+                            <div class="project">
+                                <h4>${project.name}</h4>
+                                <p><strong>Status:</strong> ${project.status}</p>
+                                <p><strong>Completion:</strong> ${project.completion}%</p>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: ${project.completion}%">${project.completion}%</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="employee-tasks">
+                        <h3>Your Tasks</h3>
+                        <p><strong>Number of Tasks:</strong> ${tasks[employeeName].length}</p>
+                        <div class="task-list">
+                            ${tasks[employeeName].map(task => `<div class="task-item">${task}</div>`).join('')}
+                        </div>
+                        <h4>Overall Task Progress</h4>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: ${taskProgress[employeeName]}%">${taskProgress[employeeName]}%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            mainContent.innerHTML = html;
+        }
+
+        function showProjectDetails(member) {
+            const projectDetails = document.getElementById('projectDetails');
+            const teamName = teams.find(team => team.members.includes(member)).name;
+            projectDetails.innerHTML = `
+                <h3>Project Details for ${member}</h3>
+                <p>Team: ${teamName}</p>
+                <p>Number of Tasks: ${tasks[member].length}</p>
+                <h4>Assigned Tasks:</h4>
+                <div class="task-list">
+                 ${tasks[member].map(task => `<div class="task-item">${task}</div>`).join('')}
+                </div>
+                <h4>Task Progress:</h4>
+                <div class="progress-bar">
+                    <div class="progress" style="width: ${taskProgress[member]}%">${taskProgress[member]}%</div>
+                </div>
+                <div class="task-form">
+                    <input type="text" id="newTask" placeholder="New task">
+                    <button onclick="assignTask('${member}')">Assign Task</button>
+                </div>
+            `;
+            projectDetails.classList.remove('hidden');
+        }
+
+        function assignTask(member) {
+            const newTaskInput = document.getElementById('newTask');
+            const newTask = newTaskInput.value.trim();
+            if (newTask) {
+                tasks[member].push(newTask);
+                newTaskInput.value = '';
+                showProjectDetails(member);
+                renderAdminDashboard();
+            }
+        }
+    </script>
+</body>
+</html>
